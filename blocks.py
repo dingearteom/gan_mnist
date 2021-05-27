@@ -38,8 +38,9 @@ class Generator(nn.Module):
 
 
 class Discriminator(nn.Module):
-    def __init__(self, nc=1, ndf=64):
+    def __init__(self, device, nc=1, ndf=64):
         super(Discriminator, self).__init__()
+        self.device = device
         self.main = nn.Sequential(
             # input is (nc) x 64 x 64
             nn.Conv2d(nc, ndf, 4, 2, 1, bias=False),
@@ -61,5 +62,12 @@ class Discriminator(nn.Module):
         )
 
     def forward(self, input):
-        output = self.main(input)
-        return output.view(-1, 11)
+        output = self.main(input).view(-1, 11)
+        # batch = output.shape[0]
+        # mask = torch.tensor([[False] * 11 for i in range(batch)])
+        # for batch_id in range(batch):
+        #     mask[batch_id][label[batch_id]] = True
+        #     mask[batch_id][10] = True
+        # output = torch.masked_select(output, mask.to(self.device))
+        # output = output.view(batch, 2)
+        return output

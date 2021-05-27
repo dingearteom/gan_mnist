@@ -14,7 +14,7 @@ class GAN:
         self.device = device
         self.dataloader = dataloader
         self.gen = Generator(emb_size=emb_size).to(device)
-        self.disc = Discriminator().to(device)
+        self.disc = Discriminator(device).to(device)
         weights_init(self.gen)
         weights_init(self.disc)
 
@@ -42,10 +42,11 @@ class GAN:
                 self.disc.zero_grad()
                 disc_loss = criterion(self.disc(imgs), labels)
                 z = torch.rand((batch, self.emb_size)).to(self.device)
-                disc_loss += criterion(self.disc(self.gen([z, labels]).detach()), torch.full((batch, ), 10,
-                                                                                             dtype=torch.long,
-                                                                                             device=self.device))
-
+                disc_loss += criterion(self.disc(self.gen([z, labels]).detach()),
+                                       torch.full((batch,), 10,
+                                                  dtype=torch.long,
+                                                  device=self.device))
+                disc_loss /= 4
                 disc_loss.backward()
                 self.optimizerD.step()
                 disc_loss_cum += disc_loss.item()
@@ -82,9 +83,6 @@ class GAN:
                     axes[1][i].imshow(imgs_fake[i].view(64, 64))
                     axes[1][i].axis('off')
                 plt.show()
-
-
-
 
     def load(self):
         pass
